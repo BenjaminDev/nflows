@@ -39,7 +39,7 @@ class OceanData(Dataset):
             tuple: (image, target) where target is index of the target class.
         """
         # breakpoint()
-        img, target = pil_loader(self.data[index]), 1 #self.targets[index]
+        img, target = Image.open(self.data[index]), 1 #self.targets[index]
 
         if self.transform is not None:
             img = self.transform(img)

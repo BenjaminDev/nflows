@@ -20,13 +20,13 @@ L = 3
 K = 16
 torch.manual_seed(0)
 
-input_shape = (3, 32, 32)
+input_shape = (1, 320, 320)
 n_dims = np.prod(input_shape)
-channels = 3
+channels = 1
 hidden_channels = 256
 split_mode = 'channel'
 scale = True
-num_classes = 10
+num_classes = 2
 
 # Set up flows, distributions and merge operations
 q0 = []
@@ -61,9 +61,9 @@ model = model.to(device)
 
 # %%
 # Prepare training data
-batch_size = 128
+batch_size = 2
 data_path = "/mnt/vol_b/datasets/"
-transform = tv.transforms.Compose([tv.transforms.ToTensor(), nf.utils.Scale(255. / 256.), nf.utils.Jitter(1 / 256.), tv.transforms.Resize((32,32))])
+transform = tv.transforms.Compose([tv.transforms.ToTensor(), nf.utils.Scale(255. / 256.), nf.utils.Jitter(1 / 256.), tv.transforms.Resize((320,320))])
 # train_data = tv.datasets.CIFAR10(data_path, train=True,
 #                                  download=True, transform=transform)
 train_data = OceanData(Path(data_path)/"oceans_small_320_320", train=True,
@@ -114,7 +114,7 @@ plt.show()
 
 # %%
 # Model samples
-num_sample = 10
+num_sample = 1
 
 with torch.no_grad():
     y = torch.arange(num_classes).repeat(num_sample).to(device)
@@ -126,17 +126,24 @@ with torch.no_grad():
 
     del(x, y, x_)
 
-# %%
-# Get bits per dim
-n = 0
-bpd_cum = 0
-with torch.no_grad():
-    for x, y in iter(test_loader):
-        nll = model(x.to(device), y.to(device))
-        nll_np = nll.cpu().numpy()
-        bpd_cum += np.nansum(nll_np / np.log(2) / n_dims + 8)
-        n += len(x) - np.sum(np.isnan(nll_np))
+from random import choices
+plt.figure(figsize=(10, 10))
+sample_truth_images = [o[0] for o in choices(train_data, k=num_sample)]
+x_ = torch.stack(sample_truth_images)
+plt.imshow(np.transpose(tv.utils.make_grid(x_, nrow=num_classes).cpu().numpy(), (1, 2, 0)))
+plt.savefig("examples_true.png")
 
-    print('Bits per dim: ', bpd_cum / n)
+# %%
+# # Get bits per dim
+# n = 0
+# bpd_cum = 0
+# with torch.no_grad():
+#     for x, y in iter(test_loader):
+#         nll = model(x.to(device), y.to(device))
+#         nll_np = nll.cpu().numpy()
+#         bpd_cum += np.nansum(nll_np / np.log(2) / n_dims + 8)
+#         n += len(x) - np.sum(np.isnan(nll_np))
+
+#     print('Bits per dim: ', bpd_cum / n)
 
 
