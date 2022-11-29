@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "nflows"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+torch = "^1.13.0"
+torchvision = "^0.14.0"
+normflows = "^1.4"
+ipykernel = "^6.17.1"
+matplotlib = "^3.6.2"
+tqdm = "^4.64.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
