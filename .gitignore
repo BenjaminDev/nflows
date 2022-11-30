@@ -1,1 +1,3 @@
-nflows/datasets.py
+*.pyc
+*.pth
+*.png
