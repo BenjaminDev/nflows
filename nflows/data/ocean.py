@@ -6,6 +6,7 @@ from PIL.Image import Image as PImage
 from PIL import Image
 from torchvision.datasets.folder import pil_loader
 
+
 class OceanData(Dataset):
     def __init__(
         self,
@@ -20,15 +21,11 @@ class OceanData(Dataset):
 
         self.train = train  # training set or test set
 
-
         self.transform = transform
         self.target_transform = target_transform
 
-
-
         self.data: Path = list(Path(root).glob("*.png"))
-        self.targets = [1]*len(self.data)
-
+        self.targets = [1] * len(self.data)
 
     def __getitem__(self, index: int) -> Tuple[PImage, int]:
         """
@@ -38,15 +35,15 @@ class OceanData(Dataset):
         Returns:
             tuple: (image, target) where target is index of the target class.
         """
-        # breakpoint()
-        img, target = Image.open(self.data[index]), 1 #self.targets[index]
+        #
+        img, target = Image.open(self.data[index]), 1  # self.targets[index]
 
         if self.transform is not None:
             img = self.transform(img)
 
         if self.target_transform is not None:
             target = self.target_transform(target)
-        # breakpoint()
+        #
         return img, target
 
     def __len__(self) -> int:
@@ -56,4 +53,3 @@ class OceanData(Dataset):
 if __name__ == "__main__":
     od = OceanData(root="/mnt/vol_b/datasets/oceans_small_320_320")
     print(len(od))
-

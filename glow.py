@@ -60,11 +60,13 @@ model = model.to(device)
 
 # %%
 # Prepare training data
-batch_size = 128
+batch_size = 256
 data_path = "/mnt/vol_b/datasets/"
 transform = tv.transforms.Compose([tv.transforms.ToTensor(), nf.utils.Scale(255. / 256.), nf.utils.Jitter(1 / 256.)])
 train_data = tv.datasets.CIFAR10(data_path, train=True,
                                  download=True, transform=transform)
+
+
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True,
                                            drop_last=True)
 
@@ -73,14 +75,14 @@ test_data = tv.datasets.CIFAR10(data_path, train=False,
 test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size)
 
 train_iter = iter(train_loader)
-x, y = next(train_iter)
+# x, y = next(train_iter)
 
 # %%
-y
+# y
 
 # %%
 # Train model
-max_iter = 2000
+max_iter = 6000
 
 loss_hist = np.array([])
 
@@ -93,6 +95,7 @@ for i in tqdm(range(max_iter)):
         train_iter = iter(train_loader)
         x, y = next(train_iter)
     optimizer.zero_grad()
+
     loss = model.forward_kld(x.to(device), y.to(device))
 
     if ~(torch.isnan(loss) | torch.isinf(loss)):
@@ -117,7 +120,7 @@ with torch.no_grad():
     x_ = torch.clamp(x, 0, 1)
     plt.figure(figsize=(10, 10))
     plt.imshow(np.transpose(tv.utils.make_grid(x_, nrow=num_classes).cpu().numpy(), (1, 2, 0)))
-    plt.show()
+    plt.savefig("examples.png")
 
     del(x, y, x_)
 
