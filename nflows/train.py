@@ -20,21 +20,22 @@ from nflows import data
 
 # Move model on GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = models.get_glow_model().to(device)
 
 batch_size = 2
 
-train_ds, test_ds, num_classes = data.get_ocean_dataset(
+train_ds, test_ds, num_classes, input_shape = data.get_ocean_dataset(
     data_dir="/mnt/vol_b/datasets/oceans_small_320_320"
 )
-# train_ds, test_ds, num_classes = data.get_flowers_102()
+# train_ds, test_ds, num_classes, input_shape = data.get_flowers_102(batch_size=batch_size)
+# train_ds, test_ds, num_classes, input_shape = data.get_stl10(batch_size=8)
 
-
+model = models.get_glow_model(num_classes=num_classes, input_shape=input_shape).to(device)
+# model.load("model_4.pth")
 
 loss_hist = np.array([])
 
 optimizer = torch.optim.Adamax(model.parameters(), lr=1e-3, weight_decay=1e-5)
-epochs = 1
+epochs = 200
 for epoch in range(epochs):
     for sample in tqdm(train_ds):
 
@@ -51,28 +52,33 @@ for epoch in range(epochs):
 
         loss_hist = np.append(loss_hist, loss.detach().to("cpu").numpy())
         del (x, y, loss)
+    num_sample = 5
+    model.save(f"model_{epoch}.pth")
+    # num_classes = 2
+    with torch.no_grad():
+        y = torch.arange(num_classes).repeat(num_sample).to(device=device)
+        x, _ = model.sample(y=y)
+        x_ = torch.clamp(x, 0, 1)
+        plt.figure(figsize=(10, 10))
+        plt.imshow(
+            np.transpose(tv.utils.make_grid(x_, nrow=num_classes).cpu().numpy(), (1, 2, 0))
+        )
+        plt.savefig(f"examples_{epoch}.png")
+
+
+    del (x, y, x_)
 
 plt.figure(figsize=(10, 10))
 plt.plot(loss_hist, label="loss")
 plt.legend()
-plt.savefig("training loss")
-num_sample = 2
-with torch.no_grad():
-    y = torch.arange(num_classes).repeat(num_sample).to(device)
-    x, _ = model.sample(y=y)
-    x_ = torch.clamp(x, 0, 1)
-    plt.figure(figsize=(10, 10))
-    plt.imshow(
-        np.transpose(tv.utils.make_grid(x_, nrow=num_classes).cpu().numpy(), (1, 2, 0))
-    )
-    plt.savefig("examples.png")
-
-    del (x, y, x_)
-
+plt.savefig("training loss.png")
 from random import choices
 
 plt.figure(figsize=(10, 10))
-sample_truth_images = [o[0] for o in choices(iter(train_ds), k=num_sample)]
+
+num_classes = 2
+train_ds_iter = iter(train_ds)
+sample_truth_images = [next(train_ds_iter)[0][0] for o in  range(num_sample)]
 x_ = torch.stack(sample_truth_images)
 plt.imshow(
     np.transpose(tv.utils.make_grid(x_, nrow=num_classes).cpu().numpy(), (1, 2, 0))

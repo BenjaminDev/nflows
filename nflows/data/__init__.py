@@ -26,7 +26,7 @@ transform = tv.transforms.Compose(
 from datasets import Image
 from PIL import Image as PImage
 
-from torchvision.datasets import flowers102
+from torchvision.datasets import flowers102, stl10
 
 def transforms(samples):
     #
@@ -65,8 +65,9 @@ def get_ocean_dataset(data_dir: Path, batch_size=2) -> Tuple[ torch.utils.data.D
     test_loader = torch.utils.data.DataLoader(
             test_ds, batch_size=batch_size, shuffle=True, drop_last=True
         )
-    num_classes = 1
-    return train_loader, test_loader, num_classes
+    num_classes = 2
+    input_shape = (1, 320, 320)
+    return train_loader, test_loader, num_classes, input_shape
 
 def get_flowers_102(batch_size:int=2):
     train_ds = flowers102.Flowers102(root="/mnt/vol_b/datasets", split="train", download=True, transform=transform)
@@ -79,15 +80,40 @@ def get_flowers_102(batch_size:int=2):
     test_loader = torch.utils.data.DataLoader(
             test_ds, batch_size=batch_size, shuffle=True, drop_last=True
         )
-    num_classes = 1
-    return train_loader, test_loader, num_classes
+    num_classes = 102
+    input_shape = (3, 320, 320)
+    return train_loader, test_loader, num_classes, input_shape
 
+def get_stl10(batch_size):
+
+    transform = tv.transforms.Compose(
+    [
+        # Unpack(),
+        tv.transforms.ToTensor(),
+        nf.utils.Scale(255.0 / 256.0),
+        nf.utils.Jitter(1 / 256.0),
+        tv.transforms.Resize((96, 96)),
+    ]
+)
+
+    train_ds = stl10.STL10(root="/mnt/vol_b/datasets", split="train", download=True, transform=transform)
+    test_ds = stl10.STL10(root="/mnt/vol_b/datasets", split="train", download=True, transform=transform)
+    train_loader = torch.utils.data.DataLoader(
+    train_ds, batch_size=batch_size, shuffle=True, drop_last=True
+        )
+
+    test_loader = torch.utils.data.DataLoader(
+            test_ds, batch_size=batch_size, shuffle=True, drop_last=True
+        )
+    num_classes = 10
+    input_shape = (3, 96, 96)
+    return train_loader, test_loader, num_classes, input_shape
 
 if __name__ =="__main__":
     # d = get_flowers_102()
     from tqdm import tqdm
     # load_dataset("Guldeniz/flower_dataset", split="train").save_to_disk("/mnt/vol_b/datasets/flower_dataset")
-    train_ds,_,_  = get_flowers_102()
+    train_ds,_,_, _  = get_flowers_102(batch_size=2)
     for x in tqdm(train_ds):
         breakpoint()
         pass

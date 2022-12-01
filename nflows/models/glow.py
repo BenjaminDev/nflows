@@ -1,19 +1,20 @@
 # Define flows
 import torch
 import normflows as nf
+from typing import Tuple
 
 
-def get_glow_model():
+def get_glow_model(num_classes:int, input_shape:Tuple[int, int, int]):
 
     L = 3
     K = 16
 
-    input_shape = (1, 320, 320)
-    channels = 1
+    # input_shape = (3, 320, 320)
+    channels, _, _ = input_shape
     hidden_channels = 256
     split_mode = "channel"
     scale = True
-    num_classes = 2
+
 
     # Set up flows, distributions and merge operations
     q0 = []
