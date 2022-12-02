@@ -27,21 +27,21 @@ batch_size = 2
 #     data_dir="/mnt/vol_b/datasets/oceans_small_320_320"
 # )
 
-# train_ds, test_ds, num_classes, input_shape = data.get_bubbles_dataset(
-#     data_dir="/mnt/vol_b/datasets/duck_in_tub"
-# )
+train_ds, test_ds, num_classes, input_shape = data.get_bubbles_dataset(
+    data_dir="/mnt/vol_b/datasets/duck_simple"
+)
 
 # train_ds, test_ds, num_classes, input_shape = data.get_flowers_102(batch_size=batch_size)
 # train_ds, test_ds, num_classes, input_shape = data.get_stl10(batch_size=8)
-train_ds, test_ds, num_classes, input_shape = data.get_mnist(batch_size=32)
+# train_ds, test_ds, num_classes, input_shape = data.get_mnist(batch_size=32)
 
 model = models.get_glow_model(num_classes=num_classes, input_shape=input_shape).to(device)
-# model.load("model_4.pth")
+model.load("/home/ubuntu/nflows/model_328.pth")
 
 loss_hist = np.array([])
 
 optimizer = torch.optim.Adamax(model.parameters(), lr=1e-3, weight_decay=1e-5)
-epochs = 200
+epochs = 2000
 for epoch in range(epochs):
     for sample in tqdm(train_ds):
 
@@ -56,7 +56,7 @@ for epoch in range(epochs):
             loss.backward()
             optimizer.step()
 
-        loss_hist = np.append(loss_hist, loss.detach().to("cpu").numpy())
+        # loss_hist = np.append(loss_hist, loss.detach().to("cpu").numpy())
         del (x, y, loss)
     num_sample = 5
     model.save(f"model_{epoch}.pth")

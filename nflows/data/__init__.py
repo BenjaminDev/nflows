@@ -129,6 +129,7 @@ def get_mnist(batch_size):
 
     transform = tv.transforms.Compose(
     [
+
         tv.transforms.ToTensor(),
         nf.utils.Scale(255.0 / 256.0),
         nf.utils.Jitter(1 / 256.0),
